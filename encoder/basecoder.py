@@ -65,7 +65,7 @@ class BaseCoder(object):
         # motion estimation
         res, mv = self.motion_estimation(img)
         res_blocks = img2blocks(res, self._block_size)
-        mv_image_shape = (self._H / self._block_size, self._W / self._block_size)
+        mv_image_shape = (self._H // self._block_size, self._W // self._block_size)
         mv_imgx, mv_imgy = mvlist2img(mv, mv_image_shape)
         # dct transform
         dct_blocks = DCT_transform(res_blocks, kernel_size=8)
