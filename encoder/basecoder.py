@@ -17,20 +17,22 @@ class BaseCoder(object):
         16bits: time stamp
         32bits: h, w(just for the 1st frame)
         512bits: quantization matrix, 8x8 values with 8 bits(just for the 1st frame) NOTE: if quantization matrix is not adaptive, this item is all zero
-        32bits: motion vector length
+        32bits: motion vector length, x 16bits, y 16bits
         32bits: residue length
         [body]
-        motion vector
+        motion vector: x. y
         residue
     """
     def __init__(self, img_size, blcok_size, motion_search_range,\
-                 block_codebook, mv_codebook, file_name, bg_buffer_size):
+                 block_codebook, mv_codebook, quantize_mat,\
+                 file_name, bg_buffer_size):
         """
         img_size: image shape, like (W, H)
         block_size: encode block size, should be an integer like 8
         motion_search_range: search range used in motion estimation, should be an integer like 16
         block_codebook: codebook for block entropy coding, a dictionary
         mv_codebook: codebook for mv entropy coding, a tuple of two dictionary
+        quantize_mat: quantization matrix
         file_name: file name
         bg_buffer size: background buffer size
         """
@@ -39,6 +41,7 @@ class BaseCoder(object):
         self._motion_search_range = motion_search_range
         self._block_codebook = block_codebook
         self._mv_codebook = mv_codebook
+        self._quantize_mat = quantize_mat
         self._file = open(file_name, 'wb')
 
         # padding
@@ -67,7 +70,7 @@ class BaseCoder(object):
         # dct transform
         dct_blocks = DCT_transform(res_blocks, kernel_size=8)
         # quantize
-        q_blocks = quantizer(dct_blocks)
+        q_blocks = quantizer(dct_blocks, self._quantize_mat)
         # zigzag scan and RLE coding
         # TODO: not implenment
         # entropy coding
@@ -76,7 +79,7 @@ class BaseCoder(object):
         mvy_stream = to_entropy_code([mv_imgy], self._mv_codebook[1])
 
         # save reconstruct frame
-        re_dct_blocks = dequantizer(q_blocks)
+        re_dct_blocks = dequantizer(q_blocks, self._quantize_mat)
         re_res_blocks = reverse_DCT_transform(re_dct_blocks)
         image_shape = (self._H, self._W)
         re_res = blocks2img(re_res_blocks, self._block_size, image_shape)
@@ -137,7 +140,8 @@ class BaseCoder(object):
             stream.write(self._W, np.uint16)
             # TODO: adaptive quantization matrix
             stream.write(64*[0],np.uint8)
-        stream.write(mv_len, np.uint32)
+        stream.write(mvx_len, np.uint16)
+        stream.write(mvy_len, np.uint16)
         stream.write(res_len, np.uint32)
         # body
         write_str(mvx_stream, mvx_len)

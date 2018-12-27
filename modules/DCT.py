@@ -4,7 +4,8 @@ def DCT_transform(block_list, kernel_size):
         block_list: list of blocks
         kernel_size: DCT kernel size, an integer number
     """
-    pass
+    # TODO: 
+    raise NotImplementedError
 
 
 def reverse_DCT_transform(block_list, kernel_size):
@@ -13,4 +14,5 @@ def reverse_DCT_transform(block_list, kernel_size):
         block_list: list of blocks
         kernel_size: DCT kernel size, an integer number
     """
-    pass
+    # TODO:
+    raise NotImplementedError

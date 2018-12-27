@@ -60,5 +60,9 @@ def mvlist2img(mvlist, img_shape):
 def img2mvlist(imgx, imgy):
     """ convert motion vector image to list
     """
-    # TODO: not implenment
-    raise NotImplementedError
+    h, w = imgx.shape
+    mvlist = []
+    for i in range(h):
+        for j in range(w):
+            mvlist.append((imgx[i, j], imgy[i,j]))
+    return mvlist
